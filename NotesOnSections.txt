@@ -1,0 +1,35 @@
+0x81/0x1 Colition?{
+u16 value[3] // could be Half-float
+}[vert_count*frame_count]
+0x5 UV {
+    float U;
+    float V;
+}[vert_count]
+0xB Pal {
+    u8 str_count
+    values{
+        str Name
+        str Filename
+    }
+    u8 padd
+    u8 index[facecount]
+    u8 end//0xFF
+}
+0x3 VertCol{
+    u8 channel_count
+    colors[vert_count*channel_count]
+}
+0x4 Unk4{u8 comp_count; u8 data[vert_count*comp_count]}
+0x9 Shader {str ShaderName}
+0X8 Binds{
+    u16 bone_idx[4]
+    u8 bone_wgt[4]
+}
+0x7 Bones{
+    u16 bone_count
+    struct bone{
+        str name;
+        u16 parrent
+        float matrix[4][4]
+    }
+}
