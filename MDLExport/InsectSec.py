@@ -1,6 +1,6 @@
 import struct
 import sys
-from enum import IntFlag
+from enum import IntFlag, auto
 
 def u8(file):
     return struct.unpack("B", file.read(1))[0]
@@ -24,6 +24,13 @@ def  countSetBits(n):
         count += n & 1
         n >>= 1
     return count
+
+class MDLext(IntFlag):
+    TYPE_ONE = auto()
+    TYPE_TWO = auto()
+    TYPE_THREE = auto()
+    TYPE_FOUR = auto()
+    
 
 class MDL(object):
     class Extra(object):
