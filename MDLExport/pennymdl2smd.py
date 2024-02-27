@@ -1,5 +1,6 @@
 import struct
 import sys,io
+import math
 from enum import IntFlag, auto
 
 def u8(file):
@@ -40,6 +41,22 @@ class MDLext(IntFlag):
     TYPE_THREE = auto()
     TYPE_FOUR = auto()
 
+def matrixToEuler(R):
+    sy = math.sqrt(R[0][0] * R[0][0] +  R[1][0] * R[1][0])
+ 
+    singular = sy < 1e-6
+ 
+    if  not singular :
+        x = math.atan2(R[2][1] , R[2][2])
+        y = math.atan2(-R[2][0], sy)
+        z = math.atan2(R[1][0], R[0][0])
+    else :
+        x = math.atan2(-R[1][2], R[1][1])
+        y = math.atan2(-R[2][0], sy)
+        z = 0
+
+    return [x,y,z]
+
 class BoneWeghts(object): #0x8
     def __init__(self):
         self.bones = []
@@ -64,6 +81,17 @@ class Bones(object): #0x7
                     mtx.append(f32(f))
                 matrixs.append(mtx)
             self.matrix.append(matrixs)
+class Pallete(object): #0xB
+    def __init__(self):
+        self.name = []
+        self.index = []
+    def read(self,f,fcount):
+        for c in range(u8(f)):
+            self.name.append([getString(f),getString(f)])
+        u8(f)
+        for c in range(fcount):
+            self.index.append(u8(f))
+
 
 class MDL(object):
     class Extra(object):
@@ -139,18 +167,23 @@ for x in mdl.extras:
     if(x.type == 8):
         bdata = BoneWeghts()
         bdata.read(io.BytesIO(x.data),len(mdl.verts[0]))
+    if(x.type == 0xB):
+        pal = Pallete()
+        print(len(mdl.faces)/3)
+        pal.read(io.BytesIO(x.data),int(len(mdl.faces)/3))
 smdout = open(sys.argv[1] + ".smd", "w")
 smdout.write("version 1\nnodes\n")
 for idx,x in enumerate(bonz.bonename):
     smdout.write("%i \"%s\" %i\n" %(idx,x,bonz.parrent[idx]))
 smdout.write("end\nskeleton\ntime 0\n")
 for idx,x in enumerate(bonz.matrix):
-    smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][3],x[1][3],x[2][3],0.0,0.0,0.0))
+    rotz = matrixToEuler(x)
+    smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][3],x[1][3],x[2][3],rotz[0],rotz[1],rotz[2]))
 smdout.write("end\ntriangles\n")
 fc = 0
-for x in mdl.faces:
+for fidx,x in enumerate(mdl.faces):
     if(fc == 0):
-        smdout.write("test\n")
+        smdout.write("%s\n"%pal.name[pal.index[int(fidx/3)]][0])
     
     smdout.write("0  %.6f %.6f %.6f  %.6f %.6f %.6f  %.6f %.6f" %(mdl.verts[0][x][0],mdl.verts[0][x][1],mdl.verts[0][x][2],0.0,0.0,0.0,0.0,0.0))
     binds = 0
