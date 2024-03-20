@@ -173,26 +173,38 @@ for x in mdl.extras:
         pal.read(io.BytesIO(x.data),int(len(mdl.faces)/3))
 smdout = open(sys.argv[1] + ".smd", "w")
 smdout.write("version 1\nnodes\n")
-for idx,x in enumerate(bonz.bonename):
-    smdout.write("%i \"%s\" %i\n" %(idx,x,bonz.parrent[idx]))
+try:
+    for idx,x in enumerate(bonz.bonename):
+        smdout.write("%i \"%s\" %i\n" %(idx,x,bonz.parrent[idx]))
+except NameError:
+    smdout.write("%i \"%s\" %i\n" %(0,"Root",-1))
 smdout.write("end\nskeleton\ntime 0\n")
-for idx,x in enumerate(bonz.matrix):
-    rotz = matrixToEuler(x)
-    smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][3],x[1][3],x[2][3],rotz[0],rotz[1],rotz[2]))
+try:
+    for idx,x in enumerate(bonz.matrix):
+        rotz = matrixToEuler(x)
+        smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][3],x[1][3],x[2][3],rotz[0],rotz[1],rotz[2]))
+except NameError:
+    smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(0,1.0,1.0,1.0,0.0,0.0,0.0))
 smdout.write("end\ntriangles\n")
 fc = 0
 for fidx,x in enumerate(mdl.faces):
     if(fc == 0):
-        smdout.write("%s\n"%pal.name[pal.index[int(fidx/3)]][0])
+        if(pal.index[int(fidx/3)]==0xFF):
+            smdout.write("%s\n"%"Texture")
+        else:
+            smdout.write("%s\n"%pal.name[pal.index[int(fidx/3)]][0])
     
     smdout.write("0  %.6f %.6f %.6f  %.6f %.6f %.6f  %.6f %.6f" %(mdl.verts[0][x][0],mdl.verts[0][x][1],mdl.verts[0][x][2],0.0,0.0,0.0,0.0,0.0))
     binds = 0
     sr = ""
-    for idx,y in enumerate(bdata.weght[x]):
-        if(y):
-            sr += str(" %i %.6f" % (bdata.bones[x][idx],y/255))
-            binds+=1
-    smdout.write(" %i%s" % (binds,sr))
+    try:
+        for idx,y in enumerate(bdata.weght[x]):
+            if(y):
+                sr += str(" %i %.6f" % (bdata.bones[x][idx],y/255))
+                binds+=1
+        smdout.write(" %i%s" % (binds,sr))
+    except NameError:
+        smdout.write(" %i%s" % (1," 0 1.000000"))
     smdout.write("\n")
     fc+=1
     if(fc == 3):
