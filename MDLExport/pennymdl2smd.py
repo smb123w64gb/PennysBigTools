@@ -181,8 +181,12 @@ except NameError:
 smdout.write("end\nskeleton\ntime 0\n")
 try:
     for idx,x in enumerate(bonz.matrix):
-        rotz = matrixToEuler(x)
-        smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][3],x[1][3],x[2][3],rotz[0],rotz[1],rotz[2]))
+        rotz = [0,0,0]
+        smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][0],x[0][1],x[0][2],rotz[0],rotz[1],rotz[2]))
+        print("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f"%(idx,x[0][0],x[0][1],x[0][2],rotz[0],rotz[1],rotz[2]))
+        print("Bone:%s"%bonz.bonename[idx])
+        for y in x:
+            print(y)
 except NameError:
     smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(0,1.0,1.0,1.0,0.0,0.0,0.0))
 smdout.write("end\ntriangles\n")

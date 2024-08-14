@@ -22,7 +22,7 @@ GRADIENT grad[grad_count];
 struct ENT_HDR{
 char name[];
 ENT entrys[iter_g];
-};
+}[[name(name)]];
 
 struct PAL{
 char Magic[4];
