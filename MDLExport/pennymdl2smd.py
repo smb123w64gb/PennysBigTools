@@ -41,7 +41,7 @@ class MDLext(IntFlag):
     TYPE_THREE = auto()
     TYPE_FOUR = auto()
 
-def matrixToEuler(R):
+def matrixToEuler(Rin):
     sy = math.sqrt(R[0][0] * R[0][0] +  R[1][0] * R[1][0])
  
     singular = sy < 1e-6
@@ -180,13 +180,25 @@ except NameError:
     smdout.write("%i \"%s\" %i\n" %(0,"Root",-1))
 smdout.write("end\nskeleton\ntime 0\n")
 try:
+    curMatrix = bonz.matrix[0]
     for idx,x in enumerate(bonz.matrix):
+        px = bonz.matrix[bonz.parrent[idx]]
+        if(idx==0):
+            px = bonz.matrix[0]
         rotz = [0,0,0]
-        smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,x[0][0],x[0][1],x[0][2],rotz[0],rotz[1],rotz[2]))
-        print("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f"%(idx,x[0][0],x[0][1],x[0][2],rotz[0],rotz[1],rotz[2]))
+        ppx = x[0][3] * x[0][0] if not round(x[0][0],1) == 0.0 else x[1][3]
+        ppy = x[1][3] * x[1][1] if not round(x[1][1],1) == 0.0 else x[0][3]
+        ppz = x[2][3] * x[2][2]
+        papx = px[0][3] * px[0][0] if not round(px[0][0],1) == 0.0 else px[1][3]
+        papy = px[1][3] * px[1][1] if not round(px[1][1],1) == 0.0 else px[0][3]
+        papz = px[2][3] * px[2][2]
+        posz = [papx - ppx,papy - ppy,papz - ppz]
+        smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(idx,posz[0],posz[1],posz[2],rotz[0],rotz[1],rotz[2]))
+        #print("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f"%(idx,x[0][0],x[0][1],x[0][2],rotz[0],rotz[1],rotz[2]))
         print("Bone:%s"%bonz.bonename[idx])
         for y in x:
-            print(y)
+            print("%0.6f %0.6f %0.6f %0.6f"%(y[0],y[1],y[2],y[3]))
+        
 except NameError:
     smdout.write("%i  %0.6f %0.6f %0.6f  %0.6f %0.6f %0.6f\n"%(0,1.0,1.0,1.0,0.0,0.0,0.0))
 smdout.write("end\ntriangles\n")
